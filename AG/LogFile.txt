@@ -1,0 +1,147 @@
+// Driver
+
+package logfile;
+
+	
+	
+	import java.io.IOException;
+	import org.apache.hadoop.io.Text;
+	import org.apache.hadoop.io.IntWritable;
+	import org.apache.hadoop.conf.Configuration;
+	import org.apache.hadoop.mapreduce.Job;
+	import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+	import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+	import org.apache.hadoop.fs.Path;
+	public class WDriver {
+		public static void main(String[] args) throws Exception{
+			Configuration c=new Configuration();
+			Job job=new Job(c,"access log processing");
+			job.setJarByClass(WDriver.class);
+			job.setMapperClass(WMapper.class);
+			job.setReducerClass(WReducer.class);
+			
+			job.setOutputKeyClass(Text.class);
+			job.setOutputValueClass(IntWritable.class);
+			
+			FileInputFormat.addInputPath(job, new Path(args[0]));
+			FileOutputFormat.setOutputPath(job, new Path(args[1]));
+			
+			System.exit(job.waitForCompletion(true)?0:1);
+		}
+	}
+
+
+
+
+
+//Mapper
+
+
+package logfile;
+	
+	import java.io.IOException;
+	import org.apache.hadoop.io.Text;
+	import org.apache.hadoop.io.IntWritable;
+	import org.apache.hadoop.io.LongWritable;
+	import org.apache.hadoop.mapreduce.Mapper;
+
+	public class WMapper extends Mapper<LongWritable,Text,Text,IntWritable> {
+		@Override
+		public void map(LongWritable key,Text value,Context con) throws IOException,InterruptedException{
+			String[] parts=value.toString().split(" ");
+			if(parts.length>0) {
+				con.write(new Text(parts[0]), new IntWritable(1));
+			}
+		}
+	}
+
+
+
+
+
+//Reducer
+
+package logfile;
+	import java.io.IOException;
+	
+	import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Reducer;
+	import java.util.*;
+	public class WReducer extends Reducer<Text,IntWritable,Text,IntWritable>{
+		HashMap<String,Integer> map=new HashMap<>();
+		@Override
+		public void reduce(Text key,Iterable<IntWritable> values,Context con) {
+			int sum=0;
+			for(IntWritable val:values) sum+=val.get();
+			map.put(key.toString(),sum);
+		}
+		@Override
+		public void cleanup(Context con) throws IOException,InterruptedException{
+			ArrayList<Map.Entry<String,Integer>> list=new ArrayList<>(map.entrySet());
+			Collections.sort(list,Comparator.comparingInt((Map.Entry<String,Integer> x)->x.getValue()).reversed());
+			int count=0;
+			for(Map.Entry<String, Integer> entry:list) {
+				con.write(new Text(entry.getKey()), new IntWritable(entry.getValue()));
+				count++;
+				if(count>5) break;
+			}
+			
+		}
+	}
+
+
+
+//RUn cmds
+
+hdfs dfs -mkdir /inputfile
+hdfs dfs -put logfile.txt /inputfile/
+
+hadoop jar logf(jarfile name).jar logfile(pkg name).WDriver /logfile.txt/ip.txt /outputfile
+
+hdfs dfs -cat /outputfile/part-00000 
+
+
+
+
+
+
+
+
+
+
+Why Hadoop uses Writable classes?
+For efficient serialization and distributed processing.
+
+19. What does this line do?
+con.write(new Text(parts[0]),new IntWritable(1));
+
+It writes:
+(IP Address,1)
+
+Method executed after reducer completes processing.
+
+22. Why cleanup() used in your program?
+To sort reducer results and display top accessed IPs.
+
+28. What type of file is used?
+Web server access log file.
+
+29. What information exists in log file?
+IP address, date, request type, URL, status code.
+
+30. What is status code 200?
+Request successful.
+
+ Why Java used in Hadoop?
+Because Hadoop is developed in Java and provides good distributed support.
+
+What is significance of IP address in logs?
+Identifies client system accessing server.
+
+What is web server log analysis?
+Analyzing server logs to understand traffic and activities.
+
+Final conclusion of your project?
+Program analyzes web logs and finds top accessed IP addresses using Hadoop MapReduce.
+

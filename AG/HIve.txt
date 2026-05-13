@@ -1,0 +1,205 @@
+-- =========================
+-- HIVEQL FLIGHT INFORMATION SYSTEM
+-- =========================
+
+-- ==========================================
+-- PART A : CREATE DATABASE AND TABLE
+-- ==========================================
+
+CREATE DATABASE college_db;
+SHOW DATABASES;
+
+USE college_db;
+
+CREATE TABLE student (
+   sid INT,
+   sname STRING,
+   department STRING,
+   marks INT
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+
+SHOW TABLES;
+
+DESCRIBE student;
+
+-- ==========================================
+-- INSERT VALUES INTO STUDENT TABLE
+-- ==========================================
+
+INSERT INTO student VALUES
+(1,'Abhishek','Computer',85),
+(2,'Rahul','IT',78),
+(3,'Sneha','ENTC',90),
+(4,'Priya','Computer',88);
+
+SELECT * FROM student;
+
+-- ==========================================
+-- ALTER TABLE
+-- ==========================================
+
+ALTER TABLE student
+ADD COLUMNS (city STRING);
+
+DESCRIBE student;
+
+-- ==========================================
+-- DROP TABLE
+-- ==========================================
+
+DROP TABLE student;
+
+-- ==========================================
+-- RECREATE STUDENT TABLE
+-- ==========================================
+
+CREATE TABLE student (
+   sid INT,
+   sname STRING,
+   department STRING,
+   marks INT
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+
+-- ==========================================
+-- PART B : CREATE EXTERNAL TABLE
+-- ==========================================
+
+CREATE EXTERNAL TABLE student_external (
+   sid INT,
+   sname STRING,
+   department STRING,
+   marks INT
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LOCATION '/user/hive/external/student';
+
+-- ==========================================
+-- CREATE STUDENT TEXT FILE CONTENT
+-- Save as : /home/cloudera/Desktop/student.txt
+-- ==========================================
+
+-- student.txt content
+
+1,Abhishek,Computer,85
+2,Rahul,IT,78
+3,Sneha,ENTC,90
+4,Priya,Computer,88
+5,Amit,Mechanical,75
+
+-- ==========================================
+-- LOAD DATA INTO EXTERNAL TABLE
+-- ==========================================
+
+LOAD DATA LOCAL INPATH '/home/cloudera/Desktop/student.txt'
+INTO TABLE student_external;
+
+SELECT * FROM student_external;
+
+-- ==========================================
+-- PART C : JOIN TABLES
+-- ==========================================
+
+CREATE TABLE department (
+   department STRING,
+   hod STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+
+INSERT INTO department VALUES
+('Computer','Dr.Shinde'),
+('IT','Dr.Patil'),
+('ENTC','Dr.Kale'),
+('Mechanical','Dr.Joshi');
+
+SELECT s.sid,
+       s.sname,
+       s.department,
+       d.hod
+FROM student_external s
+JOIN department d
+ON (s.department = d.department);
+
+-- ==========================================
+-- PART D : FLIGHT DATASET OPERATIONS
+-- ==========================================
+
+CREATE DATABASE flight_db;
+
+USE flight_db;
+
+CREATE TABLE flight (
+   year INT,
+   month INT,
+   day INT,
+   day_of_week INT,
+   dep_time INT,
+   crs_dep_time INT,
+   arr_time INT,
+   crs_arr_time INT,
+   unique_carrier STRING,
+   flight_num INT,
+   tail_num STRING,
+   actual_elapsed_time INT,
+   crs_elapsed_time INT,
+   air_time INT,
+   arr_delay INT,
+   dep_delay INT,
+   origin STRING,
+   dest STRING,
+   distance INT,
+   taxi_in INT,
+   taxi_out INT,
+   cancelled INT,
+   cancellation_code STRING,
+   diverted INT,
+   carrier_delay STRING,
+   weather_delay STRING,
+   nas_delay STRING,
+   security_delay STRING,
+   late_aircraft_delay STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+
+-- ==========================================
+-- LOAD FLIGHT CSV DATA
+-- ==========================================
+
+LOAD DATA LOCAL INPATH '/home/cloudera/Desktop/flight/flight_info.csv'
+INTO TABLE flight;
+
+SELECT * FROM flight LIMIT 10;
+
+-- ==========================================
+-- CREATE INDEX ON FLIGHT TABLE
+-- ==========================================
+
+CREATE INDEX idx
+ON TABLE flight(day)
+AS 'compact'
+WITH DEFERRED REBUILD;
+
+ALTER INDEX idx ON flight REBUILD;
+
+SHOW INDEXES ON flight;
+
+-- ==========================================
+-- FIND AVERAGE DEPARTURE DELAY PER DAY
+-- ==========================================
+
+SELECT day_of_week,
+AVG(dep_delay) AS avg_departure_delay
+FROM flight
+GROUP BY day_of_week;
+
+-- ==========================================
+-- EXIT HIVE
+-- ==========================================
+
+EXIT;

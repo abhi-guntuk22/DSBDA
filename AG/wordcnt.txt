@@ -1,0 +1,175 @@
+// Driver class
+
+package wordcount;
+
+
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+
+import org.apache.hadoop.mapreduce.Job;
+
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+
+public class driver {
+
+    public static void main(String[] args) throws Exception {
+
+        Configuration c = new Configuration();
+
+        Job job = Job.getInstance(c, "Wordcount");
+
+        job.setJarByClass(driver.class);
+
+        job.setMapperClass(mapper.class);
+        job.setReducerClass(reducer.class);
+
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(IntWritable.class);
+
+        FileInputFormat.addInputPath(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+    }
+}
+
+
+
+
+//Mapper
+
+package wordcount;
+
+
+	
+	
+	import java.io.IOException;
+
+	import org.apache.hadoop.io.IntWritable;
+	import org.apache.hadoop.io.LongWritable;
+	import org.apache.hadoop.io.Text;
+
+	import org.apache.hadoop.mapreduce.Mapper;
+
+	public class mapper extends Mapper<LongWritable, Text, Text, IntWritable> {
+
+	    public void map(LongWritable key, Text value, Context con)
+	            throws IOException, InterruptedException {
+
+	        String[] words = value.toString().split(" ");
+
+	        for (String word : words) {
+
+	            con.write(new Text(word), new IntWritable(1));
+	        }
+	    }
+	}
+
+
+
+
+//Reducer
+
+package wordcount;
+
+
+	
+	import java.io.IOException;
+
+	import org.apache.hadoop.io.IntWritable;
+	import org.apache.hadoop.io.Text;
+
+	import org.apache.hadoop.mapreduce.Reducer;
+
+	public class reducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+
+	    public void reduce(Text word, Iterable<IntWritable> values, Context con)
+	            throws IOException, InterruptedException {
+
+	        int sum = 0;
+
+	        for (IntWritable value : values) {
+
+	            sum += value.get();
+	        }
+
+	        con.write(word, new IntWritable(sum));
+	    }
+	}
+
+
+
+
+
+
+
+
+//Run cmds 
+
+ touch ip.txt
+ nano ip.txt
+
+write :
+Add: 
+hello hadoop hello world 
+python with hadoop 
+hello python
+
+hdfs dfs -mkdir /inputfile
+hdfs dfs -put ip.txt /inputfile/
+
+hadoop jar wordcnt.jar wordcount.driver /inputfile/ip.txt /outputfile
+
+hdfs dfs -cat /outputfile/part-00000 
+
+
+
+
+//
+4. What is NameNode?
+→ Master node that stores metadata and manages HDFS.
+
+5. What is DataNode?
+→ Slave node that stores actual data blocks.
+
+6. What is Secondary NameNode?
+→ Merges FsImage and EditLog to reduce NameNode load.
+
+7. What is metadata?
+→ Information about files like block location, permissions, filename.
+
+What is heartbeat?
+→ Signal sent from DataNode to NameNode.
+
+What is serialization?
+→ Converting object into byte stream.
+
+What does con.write() do?
+→ Writes mapper/reducer output.
+
+What is Combiner?
+→ Mini reducer used after mapper.
+
+ Why Configuration object used?
+→ Loads Hadoop configuration.
+
+What does Job.getInstance() do?
+→ Creates Hadoop job.
+
+What is args[0]?
+→ Input path.
+
+45. What is args[1]?
+→ Output path.
+
+46. Why output folder should not exist?
+→ Hadoop creates it automatically.
+
+47. What does waitForCompletion(true) do?
+→ Runs and waits for job completion.
+
