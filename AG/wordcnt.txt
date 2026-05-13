@@ -125,7 +125,7 @@ hdfs dfs -put ip.txt /inputfile/
 
 hadoop jar wordcnt.jar wordcount.driver /inputfile/ip.txt /outputfile
 
-hdfs dfs -cat /outputfile/part-00000 
+hdfs dfs -cat /outputfile/part-r-00000 
 
 
 
