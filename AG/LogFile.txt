@@ -92,14 +92,14 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 
 
-//RUn cmds
+//Run cmds
 
 hdfs dfs -mkdir /inputfile
 hdfs dfs -put logfile.txt /inputfile/
 
-hadoop jar logf(jarfile name).jar logfile(pkg name).WDriver /logfile.txt/ip.txt /outputfile
+hadoop jar logf(jarfile name).jar logfile(pkg name).WDriver /inputfile/logfile.txt /outputfile
 
-hdfs dfs -cat /outputfile/part-00000 
+hdfs dfs -cat /outputfile/part-r-00000 
 
 
 
