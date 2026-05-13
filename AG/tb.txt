@@ -1,0 +1,12 @@
+onvert Amount to Number
+
+Your Amount column contains "$" and commas.
+
+Create Calculated Field
+
+Go to: Analysis → Create Calculated Field
+
+Name: Clean Amount
+
+Formula:
+FLOAT(REPLACE(REPLACE([Amount],"$",""),",",""))
